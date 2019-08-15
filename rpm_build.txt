@@ -1,0 +1,48 @@
+###自制RPMbao
+1安装rpm-build包
+yum -y install rpm-build
+2生成rpmbuild目录结构
+rpm -ba nginx.spec     //报错,但自动生成rpmbuild目录
+ls /root/rpmbuild
+3准备工作,将源码复制到SOURCES目录
+cp nginx-1-1.2-2.tar.gz /root/rpmbuild/SOURCES/
+4 创建并修改SPEC配置文件
+vim /root/rpmbuild/SPECS/nginx.spec
+Name:nginx										#源码包软件名称
+Version:1.12.2									#源码包软件的版本号
+Release:	10										#制作的RPM包版本号
+Summary: Nginx is a web server software.			#RPM软件的概述	
+License:GPL										#软件的协议
+URL:	www.test.com									#网址
+Source0:nginx-1.12.2.tar.gz						#源码包文件的全称
+
+#BuildRequires:									#制作RPM时的依赖关系
+#Requires:										#安装RPM时的依赖关系
+%description
+nginx [engine x] is an HTTP and reverse proxy server.	#软件的详细描述
+
+%post
+useradd nginx                      		 #非必需操作：安装后脚本(创建账户)
+
+%prep
+%setup -q								#自动解压源码包，并cd进入目录
+
+%build
+./configure
+make %{?_smp_mflags}
+
+%install
+make install DESTDIR=%{buildroot}
+
+%files
+%doc
+/usr/local/nginx/*					#对哪些文件与目录打包
+
+%changelog
+************************************
+安装依赖软件包
+yum -y install gcc pcre-devel openssl-devel  //
+创建RPMbao (编译安装打包之前,需要安装依赖包,编译器等)
+rpmbuild -ba /root/rpmbuild/SPECS/nginx.spec
+ls /root/rpmbuild/RPMS/x86_64/nginx-1.12.2-10.x86_64.rpm  #rpm包存放在RPMS文件中
+rpm -ivh /root/rpmbuild/RPMS/x86_64/nginx-1.12.2-10.x86_64.rpm   #安装包
